@@ -78,7 +78,7 @@ def two_opt_swap(tour, i, j):
     Returns:
         New tour with reversed segment
     """
-    # Reverse the segment tour[i+1:j+1]
+    
     new_tour = tour[:i+1] + tour[i+1:j+1][::-1] + tour[j+1:]
     return new_tour
 
@@ -99,14 +99,11 @@ def calculate_delta(tour, coords, i, j):
     """
     n = len(tour)
     
-    # Current edges: (tour[i], tour[i+1]) and (tour[j], tour[j+1])
-    # New edges: (tour[i], tour[j]) and (tour[i+1], tour[j+1])
-    
-    # Old distance
+   
     old_dist = (dist(coords[tour[i]], coords[tour[(i+1) % n]]) +
                 dist(coords[tour[j]], coords[tour[(j+1) % n]]))
     
-    # New distance
+   
     new_dist = (dist(coords[tour[i]], coords[tour[j]]) +
                 dist(coords[tour[(i+1) % n]], coords[tour[(j+1) % n]]))
     
@@ -128,18 +125,18 @@ def simulated_annealing_tsp(coords, cutoff_time, seed):
     random.seed(seed)
     start_time = time.time()
     
-    # Generate initial solution using nearest neighbor
+    
     print("Generating initial solution using Nearest Neighbor...")
     current_tour = nearest_neighbor(coords)
     current_length = calculate_tour_length(current_tour, coords)
     
-    # Best solution found
+   
     best_tour = current_tour[:]
     best_length = current_length
     
     print(f"Initial solution length: {current_length}")
     
-    # Simulated Annealing parameters
+    
     n = len(coords)
     initial_temp = 10000.0
     final_temp = 0.1
@@ -148,55 +145,54 @@ def simulated_annealing_tsp(coords, cutoff_time, seed):
     temperature = initial_temp
     iterations = 0
     improvements = 0
-    time_check_interval = 100  # Check time every N iterations
+    time_check_interval = 100  
     
     print("Starting Simulated Annealing...")
     
     while temperature > final_temp:
-        # Check time limit periodically
+        
         if iterations % time_check_interval == 0:
             elapsed = time.time() - start_time
             if elapsed >= cutoff_time:
                 print(f"\nTime limit reached after {elapsed:.2f} seconds")
                 break
             
-            # Progress report
+            
             if iterations % 10000 == 0 and iterations > 0:
                 print(f"Iteration {iterations:,} | Best: {best_length} | "
                       f"Current: {current_length} | Temp: {temperature:.2f} | "
                       f"Time: {elapsed:.2f}s")
         
-        # Generate random 2-opt neighbor
+        
         i = random.randint(0, n - 2)
         j = random.randint(i + 1, n - 1)
         
-        # Ensure i and j are not adjacent (would be no-op)
         if j - i == 1:
             iterations += 1
             continue
         
-        # Calculate change in tour length
+        
         delta = calculate_delta(current_tour, coords, i, j)
         
-        # Accept or reject the move
+        
         if delta < 0:
-            # Improvement: always accept
+           
             current_tour = two_opt_swap(current_tour, i, j)
             current_length += delta
             improvements += 1
             
-            # Update best solution if needed
+            
             if current_length < best_length:
                 best_tour = current_tour[:]
                 best_length = current_length
         else:
-            # Worse solution: accept with probability
+            
             acceptance_prob = math.exp(-delta / temperature)
             if random.random() < acceptance_prob:
                 current_tour = two_opt_swap(current_tour, i, j)
                 current_length += delta
         
-        # Cool down
+        
         temperature *= cooling_rate
         iterations += 1
     
@@ -222,13 +218,13 @@ def ls_tsp(args):
             - time: Cutoff time in seconds
             - seed: Random seed for reproducibility
     """
-    # Read TSP instance
+   
     coords = read_tsp(args.inst)
     print(f"Loaded {len(coords)} cities from {args.inst}")
     
-    # Run Simulated Annealing
+    
     best_tour, best_length = simulated_annealing_tsp(coords, args.time, args.seed)
     
-    # Write solution
+   
     instance = os.path.splitext(os.path.basename(args.inst))[0]
     write_solution(instance, args, best_length, best_tour)
