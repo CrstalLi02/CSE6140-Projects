@@ -57,7 +57,7 @@ def nearest_neighbor(coords, start_node=None):
     
     current = start_node
     while unvisited:
-        # Find nearest unvisited neighbor
+        
         nearest = min(unvisited, key=lambda node: dist(coords[current], coords[node]))
         tour.append(nearest)
         unvisited.remove(nearest)
